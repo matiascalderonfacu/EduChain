@@ -1,0 +1,22 @@
+[
+  {
+    "query": "InitLedger",
+    "args": []
+  },
+  {
+    "query": "CreateCertificate",
+    "args": [
+      "Matias",
+      "42854190",
+      "Programa 3",
+      "2025-12-01",
+      "Ingenieria",
+      "Ingenieria en sistemas",
+      "Universidad Tecnologica Nacional"
+    ]
+  },
+  {
+    "invoke": "CertificateExists",
+    "args": ["50a6ed0be36d931879a043607d5730b2d48ba0a25b9ec105a2a215efcd6a1283"]
+  }
+]
