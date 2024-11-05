@@ -66,9 +66,9 @@ class Chaincode extends Contract {
   // Certificate exists
   async CertificateExists(ctx, certificateId) {
     let certificate = await ctx.stub.getState(certificateId);
+    console.log(certificate.length);
 
-    if (certificate) return true;
-    else return false;
+    return certificate && certificate.length > 0;
   }
 
   // InitLedger
