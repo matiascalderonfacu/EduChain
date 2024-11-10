@@ -12,11 +12,12 @@
       "2024-06-26",
       "Ingenieria",
       "Ingenieria en sistemas",
-      "Universidad Tecnologica Nacional"
+      "Universidad Tecnologica Nacional",
+      "42854190"
     ]
   },
   {
-    "query": "CertificateExists",
+    "query": "EntityExists",
     "args": ["50a6ed0be36d931879a043607d5730b2d48ba0a25b9ec105a2a215efcd6a1283"]
   },
   {
@@ -27,11 +28,29 @@
     "invoke": "RevokeCertificate",
     "args": [
       "97a6b8f0d9d1a483a7934fbd373d3fe1030743ea68f00bbf3ba71206364b9b6a",
-      "Motivo x"
+      "Motivo x",
+      "42854190"
     ]
   },
   {
     "invoke": "GetStudentCertificates",
-    "args": ["42854190"]
+    "args": ["42854191", "42854190"]
+  },
+  {
+    "invoke": "CreateUser",
+    "args": ["42854192", "institution"]
+  },
+  {
+    "query": "ValidateUserType",
+    "args": ["42854192", "institution"]
+  },
+  {
+    "invoke": "CreateVerificationRequest",
+    "args": [
+      "97a6b8f0d9d1a483a7934fbd373d3fe1030743ea68f00bbf3ba71206364b9b6a",
+      "UTN",
+      "2024-11-20",
+      "42854190"
+    ]
   }
 ]

@@ -10,6 +10,49 @@ const { Contract } = require("fabric-contract-api");
 const crypto = require("crypto");
 
 class Chaincode extends Contract {
+  // Create new student
+  async CreateUser(ctx, userDni, userType) {
+    const enrollmentID =
+      ctx.clientIdentity.getAttributeValue("hf.EnrollmentID");
+
+    if (enrollmentID !== "org1admin")
+      throw new Error(
+        "You don't have the necessary permissions to create a user"
+      );
+
+    const idUser = crypto.createHash("sha256").update(userDni).digest("hex");
+    const userData = {
+      id: idUser,
+      userType: userType,
+      dni: userDni,
+    };
+
+    try {
+      await ctx.stub.putState(idUser, Buffer.from(JSON.stringify(userData)));
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+
+    return {
+      message: "User created successfully",
+      user: userData,
+    };
+  }
+
+  // Validate user type
+  async ValidateUserType(ctx, userDni) {
+    const idUser = crypto.createHash("sha256").update(userDni).digest("hex");
+
+    const userData = await ctx.stub.getState(idUser);
+
+    if (!userData || userData.length === 0)
+      throw new Error("User does not exist");
+
+    const jsonUserData = JSON.parse(userData.toString("utf8"));
+
+    return jsonUserData;
+  }
+
   // Create new certificate
   async CreateCertificate(
     ctx,
@@ -19,8 +62,14 @@ class Chaincode extends Contract {
     issueDate,
     degree,
     title,
-    institution
+    institution,
+    requestUserDni
   ) {
+    const userData = await this.ValidateUserType(ctx, requestUserDni);
+
+    if (userData.userType !== "institution")
+      throw new Error("You don't have the necessary permissions");
+
     if (!studentName) throw new Error("The student name is required");
     if (!dni) throw new Error("The dni is required");
     if (!program) throw new Error("The program is required");
@@ -48,7 +97,7 @@ class Chaincode extends Contract {
       .update(data)
       .digest("hex");
 
-    const exists = await this.CertificateExists(ctx, idCertificate);
+    const exists = await this.EntityExists(ctx, idCertificate);
     if (exists) throw new Error("The certificate already exists");
 
     const certificate = {
@@ -76,11 +125,11 @@ class Chaincode extends Contract {
     return certificate;
   }
 
-  // Certificate exists
-  async CertificateExists(ctx, certificateId) {
-    const certificate = await ctx.stub.getState(certificateId);
+  // Entity exists
+  async EntityExists(ctx, entityId) {
+    const entity = await ctx.stub.getState(entityId);
 
-    if (certificate && certificate.length > 0) return true;
+    if (entity && entity.length > 0) return true;
     else return false;
   }
 
@@ -96,12 +145,16 @@ class Chaincode extends Contract {
     if (certificateJson.state === "revoked")
       throw new Error(`The certificate ${certificateId} is revoked`);
 
-    // TODO: VERIFICAR COMO PODER SABER SI EL CERTIIFICADO HA SIDO MODIFICADO
     return certificateJson;
   }
 
   // Revoke certificate
-  async RevokeCertificate(ctx, certificateId, reason) {
+  async RevokeCertificate(ctx, certificateId, reason, requestUserDni) {
+    const userData = await this.ValidateUserType(ctx, requestUserDni);
+
+    if (userData.userType !== "institution")
+      throw new Error("You don't have the necessary permissions");
+
     if (!reason) throw new Error("The reason of revoke is required");
 
     const certificateData = await this.ValidateCertificate(ctx, certificateId);
@@ -122,7 +175,13 @@ class Chaincode extends Contract {
   }
 
   // Get all certificates of student
-  async GetStudentCertificates(ctx, dni) {
+  async GetStudentCertificates(ctx, dni, requestUserDni) {
+    const userData = await this.ValidateUserType(ctx, requestUserDni);
+
+    if (userData.userType === "student") {
+      if (userData.dni !== dni) throw new Error("You don't have permissions");
+    }
+
     if (!dni) throw new Error("Provide the dni of the student");
 
     const query = {
@@ -131,10 +190,6 @@ class Chaincode extends Contract {
         state: "issued",
       },
     };
-
-    const clientID = ctx.clientIdentity.getID();
-
-    console.log(`Certificate creation invoked by (ID: ${clientID})`);
 
     const iterator = await ctx.stub.getQueryResult(JSON.stringify(query));
     const results = [];
@@ -153,40 +208,89 @@ class Chaincode extends Contract {
     return results;
   }
 
+  // Create verification request
+  async CreateVerificationRequest(
+    ctx,
+    certificateId,
+    employeeName,
+    requestDate,
+    requestUserDni
+  ) {
+    const userData = await this.ValidateUserType(ctx, requestUserDni);
+
+    if (userData.userType !== "institution")
+      throw new Error("You don't have the necessary permissions");
+
+    if (!certificateId) throw new Error("The certificate id is required");
+    if (!employeeName) throw new Error("The employee name is required");
+    if (!requestDate) throw new Error("The request date is required");
+
+    const regexRequestDate = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+    if (!regexRequestDate.test(requestDate))
+      throw new Error("The issue date must be like YYYY-MM-DD");
+
+    const requestDateWithDateFormat = new Date(requestDate);
+    const currentDate = new Date();
+
+    requestDateWithDateFormat.setHours(0, 0, 0, 0);
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (requestDateWithDateFormat >= currentDate)
+      throw new Error("The issue date must be previous than today");
+
+    const data = `${certificateId}|${employeeName}|${requestDate}`;
+    const idVerificationRequest = crypto
+      .createHash("sha256")
+      .update(data)
+      .digest("hex");
+
+    const verificationRequestData = {
+      id: idVerificationRequest,
+      certificateId,
+      employeeName,
+      requestDate,
+      result: "pending",
+      comments: "",
+    };
+
+    const exists = await this.EntityExists(ctx, idVerificationRequest);
+    if (exists) throw new Error("The verification request already exists");
+
+    try {
+      await this.ValidateCertificate(ctx, certificateId);
+
+      verificationRequestData.result = "valid";
+    } catch (error) {
+      verificationRequestData.result = "invalid";
+    }
+
+    try {
+      await ctx.stub.putState(
+        idVerificationRequest,
+        Buffer.from(JSON.stringify(verificationRequestData))
+      );
+    } catch (error) {
+      throw new Error("Something went wrong");
+    }
+
+    return verificationRequestData;
+  }
+
   // Init ledger
   async InitLedger(ctx) {
-    const certificates = [
+    const usersDefault = [
       {
-        studentName: "Juani",
-        dniStudent: "43474542",
-        program: "Programa 1",
-        issueDate: "2024-12-01",
-        degree: "Ingenieria",
-        title: "Ingenieria en sistemas",
-        institution: "Universidad Tecnologica Nacional",
+        userDni: "42854190",
+        userType: "institution",
       },
       {
-        studentName: "Juan",
-        dniStudent: "43884165",
-        program: "Programa 2",
-        issueDate: "2024-12-25",
-        degree: "Ingenieria",
-        title: "Ingenieria en sistemas",
-        institution: "Universidad Tecnologica Nacional",
+        userDni: "43884165",
+        userType: "student",
       },
     ];
 
-    for (const certificate of certificates) {
-      await this.CreateCertificate(
-        ctx,
-        certificate.studentName,
-        certificate.dniStudent,
-        certificate.program,
-        certificate.issueDate,
-        certificate.degree,
-        certificate.title,
-        certificate.institution
-      );
+    for (const user of usersDefault) {
+      await this.CreateUser(ctx, user.userDni, user.userType);
     }
   }
 }
