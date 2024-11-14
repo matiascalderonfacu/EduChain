@@ -3,6 +3,7 @@
     "invoke": "InitLedger",
     "args": []
   },
+  // Creamos 3 certificados para Matias
   {
     "invoke": "CreateCertificate",
     "args": [
@@ -17,13 +18,42 @@
     ]
   },
   {
+    "invoke": "CreateCertificate",
+    "args": [
+      "Matias",
+      "42854191",
+      "Programa 4",
+      "2024-06-26",
+      "Ingenieria",
+      "Ingenieria en sistemas",
+      "Universidad Tecnologica Nacional",
+      "42854190"
+    ]
+  },
+  {
+    "invoke": "CreateCertificate",
+    "args": [
+      "Matias",
+      "42854191",
+      "Programa 5",
+      "2024-06-26",
+      "Ingenieria",
+      "Ingenieria en sistemas",
+      "Universidad Tecnologica Nacional",
+      "42854190"
+    ]
+  },
+  // Preguntamos por un certificado inventado
+  {
     "query": "EntityExists",
     "args": ["50a6ed0be36d931879a043607d5730b2d48ba0a25b9ec105a2a215efcd6a1283"]
   },
+  // Preguntamos por el certificado de Matias, programa 3
   {
     "query": "ValidateCertificate",
     "args": ["97a6b8f0d9d1a483a7934fbd373d3fe1030743ea68f00bbf3ba71206364b9b6a"]
   },
+  // Lo revocamos
   {
     "invoke": "RevokeCertificate",
     "args": [
@@ -32,24 +62,35 @@
       "42854190"
     ]
   },
+  // Queremos obtener los certificados de Matias
   {
     "invoke": "GetStudentCertificates",
-    "args": ["42854191", "42854190"]
+    "args": ["42854191", "42854192"]
   },
+  // Me creo un usuario de institucion
   {
     "invoke": "CreateUser",
     "args": ["42854192", "institution"]
   },
+  // Le creo un usuario de estudiante
+  {
+    "invoke": "CreateUser",
+    "args": ["42854191", "student"]
+  },
+  {
+    "invoke": "GetStudentCertificates",
+    "args": ["42854191", "42854191"]
+  },
   {
     "query": "ValidateUserType",
-    "args": ["42854192", "institution"]
+    "args": ["42854192"]
   },
   {
     "invoke": "CreateVerificationRequest",
     "args": [
       "97a6b8f0d9d1a483a7934fbd373d3fe1030743ea68f00bbf3ba71206364b9b6a",
       "UTN",
-      "2024-11-20",
+      "2024-11-10",
       "42854190"
     ]
   }
