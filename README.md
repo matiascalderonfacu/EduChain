@@ -1,3 +1,15 @@
+# EduChain
+Somos estudiantes argentinos de la Universidad Tecnológica Nacional - Facultad Regional Córdoba.
+
+- Calderón, Matías - mgcalderon.facu@gmail.com
+- Gallese, Juan Cruz - juancruz.gallese@gmail.com 
+- Molina, Juan Ignacio - juanigmolina4@gmail.com
+  
+El proyecto EduChain es el trabajo práctico integrador de la materia electiva: "Desarrollo con Tecnologías Blockchain".
+El objetivo de este repositorio es desarrollar una Aplicación Descentralizada (DApp) completa para la gestión de certificados académicos utilizando tecnologías blockchain con Hyperledger Fabric.
+Este proyecto tiene como finalidad consolidar los conocimientos adquiridos durante el curso y demostrar la capacidad de integrar distintas tecnologías para crear soluciones blockchain funcionales que aborden problemas del mundo real.
+
+
 # Inicialización del proyecto
 
 Para poder realizar la ejecución del contrato inteligentes se debe tener instalado lo siguiente:
@@ -14,6 +26,15 @@ Una vez que se cumpla con los requerimientos mencionados en el listado anterior 
 3. Una vez que haya seguido los pasos mencionados anteriormente podrá comunicarse con el smart contract mediante la interacción con el archivo `educhain.fabric` ubicado en la carpeta raiz del repositorio.
 
 # Diseño y arquitectura de la DApp
+
+La arquitectura de esta DApp está compuesta por tres partes principales:
+
+1. **Frontend**: Interfaz de usuario para interactuar con la DApp.
+2. **Backend**: Servidor que gestiona las interacciones entre el frontend y el chaincode. También hace la gestión de billeteras y validación de identidades.
+3. **Blockchain (Hyperledger Fabric)**: Red blockchain donde se ejecuta el chaincode y se almacenan las transacciones.
+
+![AquitecturaDapp](https://github.com/user-attachments/assets/d3ac1cb8-5679-4902-9890-684579d3290d)
+
 
 # Generación de IDs
 
