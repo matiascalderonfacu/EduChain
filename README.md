@@ -21,9 +21,11 @@ Para poder realizar la ejecución del contrato inteligentes se debe tener instal
 
 Una vez que se cumpla con los requerimientos mencionados en el listado anterior ejecutar los siguiente:
 
-1. Presionar el boton de `Start` de la extensión para que se generen los contenedores de docker que simulan los nodos de la red de blockchain.
-2. En el menú de `Visual Studio Code` presionar la pestaña `Run` y luego presionar la opción `Start Debugging`.
-3. Una vez que haya seguido los pasos mencionados anteriormente podrá comunicarse con el smart contract mediante la interacción con el archivo `educhain.fabric` ubicado en la carpeta raiz del repositorio.
+1. Ejecutamos en la terminal el comando `npm i` para instalar las dependencias.
+2. Inicializar docker.
+3. Presionar el boton de `Start` de la extensión para que se generen los contenedores de docker que simulan los nodos de la red de blockchain.
+4. En el menú de `Visual Studio Code` presionar la pestaña `Run` y luego presionar la opción `Start Debugging`.
+5. Una vez que haya seguido los pasos mencionados anteriormente podrá comunicarse con el smart contract mediante la interacción con el archivo `educhain.fabric` ubicado en la carpeta raiz del repositorio.
 
 # Diseño y arquitectura de la DApp
 
